@@ -8,7 +8,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'middle_name', 'last_name', 'email', 'phone_number')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email', 'phone_number')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Other', {'fields': ('profile_picture', 'role', 'last_login', 'date_joined')}),
     )
