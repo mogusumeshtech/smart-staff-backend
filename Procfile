@@ -1,2 +1,2 @@
 web: gunicorn config.wsgi
-release: python manage.py migrate && python seed_admin.py
+release: python manage.py migrate && python manage.py create_admin
