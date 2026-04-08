@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 # from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView  # Temporarily disabled
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import root_redirect, api_root
+from core.views import root_redirect, api_root, SchoolSettingsViewSet
 from staff_management.views import (
     StaffViewSet, StaffCategoryViewSet, DesignationViewSet,
     DepartmentViewSet, AllowanceViewSet, DeductionViewSet
@@ -27,6 +27,7 @@ router.register(r'payroll-periods', PayrollPeriodViewSet, basename='payroll-peri
 router.register(r'payroll', PayrollViewSet, basename='payroll')
 router.register(r'salary-advances', SalaryAdvanceViewSet, basename='salary-advance')
 router.register(r'reports', ReportViewSet, basename='report')
+router.register(r'settings', SchoolSettingsViewSet, basename='settings')
 
 urlpatterns = [
     path('', root_redirect, name='root'),
