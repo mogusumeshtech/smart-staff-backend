@@ -2,13 +2,13 @@
 import os
 import sys
 
-# Apply DO NOT DELETE - Critical compatibility fixes for Python 3.14
-# Must be imported before Django initializes
+# CRITICAL: Apply compatibility patches BEFORE Django initializes
+sys.path.insert(0, os.path.dirname(__file__))
 try:
     from config.django_init import apply_python314_django42_fixes
     apply_python314_django42_fixes()
 except Exception as e:
-    print(f"Warning: Could not load django_init: {e}")
+    print(f"Warning: django_init exception: {e}")
 
 import django
 from django.core.management import execute_from_command_line

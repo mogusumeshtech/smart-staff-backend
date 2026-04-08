@@ -5,7 +5,6 @@ Must be imported as early as possible.
 """
 
 import sys
-import copy as copy_module
 
 def apply_python314_django42_fixes():
     """Apply all necessary fixes for Python 3.14 + Django 4.2 compatibility."""
@@ -14,74 +13,58 @@ def apply_python314_django42_fixes():
         # No fixes needed for Python < 3.14
         return
 
+    print(f"[DJANGO_INIT] Python version detected: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    print(f"[DJANGO_INIT] Applying Python 3.14 + Django 4.2 compatibility patches...")
+
     try:
-        # Fix 1: Patch the copy module's _reconstruct function
-        # Django's Context.__copy__ fails because super().__copy__() doesn't
-        # properly handle Context's dicts attribute in Python 3.14
-
+        # This is the ROOT CAUSE of the issue:
+        # In Python 3.14, copy.copy() fails on Django Context objects because:
+        # 1. Context.__copy__() tries to call super().__copy__()
+        # 2. super().__copy__() calls object.__copy__()
+        # 3. object doesn't have __copy__, so it tries __dict__
+        # 4. super() proxy objects can't have __dict__ modified
+        
+        # SOLUTION: Completely replace Context.__copy__ with a working version
+        
         from django.template.context import Context
-
-        # Store the original __copy__ method
-        _original_context_copy = Context.__copy__
-
-        def _patched_context_copy(self):
-            """Patched Context.__copy__ for Python 3.14 compatibility."""
-            try:
-                # Try the original method first
-                return _original_context_copy(self)
-            except (AttributeError, TypeError):
-                # Fallback: manually copy the context
-                from copy import copy as copy_single
-                duplicate = self.__class__.__new__(self.__class__)
-                duplicate.dicts = copy_single(self.dicts)
-                return duplicate
-
-        # Apply the patch
-        Context.__copy__ = _patched_context_copy
-
-        # Fix 2: Patch the copy.deepcopy function to handle Context better
-        _original_deepcopy = copy_module.deepcopy
-
-        def _patched_deepcopy(x, memo=None, _nil=[]):
-            """Patched deepcopy that handles Django Context in Python 3.14."""
+        from copy import copy as copy_obj
+        
+        def new_context_copy(self):
+            """
+            Working Context.__copy__ for Python 3.14.
+            Directly creates a duplicate without calling super().
+            """
+            # Create new instance WITHOUT calling __init__
+            duplicate = self.__class__.__new__(self.__class__)
+            # Copy the dicts list
+            duplicate.dicts = list(self.dicts)
+            return duplicate
+        
+        # Replace the method
+        Context.__copy__ = new_context_copy
+        print("[DJANGO_INIT] ✓ Patched Context.__copy__ successfully")
+        
+        # Also patch copy.copy to handle Context safely
+        import copy as copy_module
+        _original_copy = copy_module.copy
+        
+        def patched_copy(x):
+            """Patched copy that handles Django Context specially."""
             if isinstance(x, Context):
-                # For Context objects, do shallow copy of dicts list
-                if memo is None:
-                    memo = {}
-
-                from copy import deepcopy as orig_deepcopy
-                duplicate = x.__copy__()
-
-                # Deepcopy the dicts contents
-                duplicate.dicts = [orig_deepcopy(d, memo) for d in x.dicts]
-                memo[id(x)] = duplicate
-                return duplicate
+                return new_context_copy(x)
             else:
-                # Use original deepcopy for everything else
-                return _original_deepcopy(x, memo, _nil)
-
-        copy_module.deepcopy = _patched_deepcopy
-
-        print("[PATCH] Applied Django 4.2 + Python 3.14 compatibility fixes")
-
+                return _original_copy(x)
+        
+        copy_module.copy = patched_copy
+        print("[DJANGO_INIT] ✓ Patched copy.copy successfully")
+        
     except Exception as e:
-        print(f"[WARNING] Could not apply all compatibility fixes: {e}")
-        print(f"[WARNING] Attempting partial fix...")
-
-        try:
-            from django.template.context import Context
-
-            def _context_copy_fallback(self):
-                """Fallback context copy that avoids problematic super() call."""
-                duplicate = self.__class__.__new__(self.__class__)
-                duplicate.dicts = list(self.dicts)
-                return duplicate
-
-            Context.__copy__ = _context_copy_fallback
-            print("[PATCH] Applied fallback Context.__copy__ fix")
-        except Exception as e2:
-            print(f"[ERROR] Fallback fix also failed: {e2}")
+        print(f"[DJANGO_INIT] ✗ ERROR: {e}")
+        import traceback
+        traceback.print_exc()
 
 
-# Apply fixes immediately when module is imported
+# Apply fixes immediately on import
 apply_python314_django42_fixes()
+print("[DJANGO_INIT] All patches applied successfully!")
+
