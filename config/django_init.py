@@ -23,12 +23,12 @@ def apply_python314_django42_fixes():
         # 2. super().__copy__() calls object.__copy__()
         # 3. object doesn't have __copy__, so it tries __dict__
         # 4. super() proxy objects can't have __dict__ modified
-        
+
         # SOLUTION: Completely replace Context.__copy__ with a working version
-        
+
         from django.template.context import Context
         from copy import copy as copy_obj
-        
+
         def new_context_copy(self):
             """
             Working Context.__copy__ for Python 3.14.
@@ -39,25 +39,25 @@ def apply_python314_django42_fixes():
             # Copy the dicts list
             duplicate.dicts = list(self.dicts)
             return duplicate
-        
+
         # Replace the method
         Context.__copy__ = new_context_copy
         print("[DJANGO_INIT] ✓ Patched Context.__copy__ successfully")
-        
+
         # Also patch copy.copy to handle Context safely
         import copy as copy_module
         _original_copy = copy_module.copy
-        
+
         def patched_copy(x):
             """Patched copy that handles Django Context specially."""
             if isinstance(x, Context):
                 return new_context_copy(x)
             else:
                 return _original_copy(x)
-        
+
         copy_module.copy = patched_copy
         print("[DJANGO_INIT] ✓ Patched copy.copy successfully")
-        
+
     except Exception as e:
         print(f"[DJANGO_INIT] ✗ ERROR: {e}")
         import traceback
