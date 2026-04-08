@@ -17,7 +17,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lamb
 
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',  # DISABLED - Use React frontend instead
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
