@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: smart-staff-api
+    env: python
+    plan: free
+    region: singapore
+    buildCommand: >
+      pip install -r requirements.txt &&
+      python manage.py migrate &&
+      python manage.py initialize_production_data &&
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DEBUG
+        value: 'false'
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: '*.render.com,smart-staff-api.onrender.com'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smartstaff_db
+          property: connectionString
+
+databases:
+  - name: smartstaff_db
+    databaseName: smartstaff
+    user: smartstaff_user
+    region: singapore

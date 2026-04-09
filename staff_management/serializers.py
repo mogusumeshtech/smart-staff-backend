@@ -19,9 +19,14 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'head_name', 'description', 'is_active')
 
 class StaffBasicSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    designation_name = serializers.CharField(source='designation.name', read_only=True)
+    department_name = serializers.CharField(source='department.name', read_only=True)
+
     class Meta:
         model = Staff
-        fields = ('id', 'staff_id', 'first_name', 'last_name', 'email', 'phone_number', 'designation', 'department')
+        fields = '__all__'  # Return ALL fields in list view too
+        read_only_fields = ('id', 'created_at', 'updated_at', 'category_name', 'designation_name', 'department_name')
 
 class StaffSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -30,18 +35,8 @@ class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = (
-            'id', 'staff_id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number',
-            'date_of_birth', 'gender', 'marital_status', 'nationality', 'blood_group', 'mother_tongue',
-            'category', 'category_name', 'designation', 'designation_name',
-            'department', 'department_name', 'date_of_joining', 'status', 'basic_salary',
-            'bank_account_number', 'bank_name', 'bank_branch', 'permanent_address', 'current_address',
-            'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
-            'profile_picture', 'passport_photo', 'national_id', 'kra_pin',
-            'passport_number', 'passport_expiry_date', 'qualification',
-            'is_active', 'created_at', 'updated_at'
-        )
-        read_only_fields = ('id', 'created_at', 'updated_at')
+        fields = '__all__'  # Accept and save ALL fields from the model
+        read_only_fields = ('id', 'created_at', 'updated_at', 'category_name', 'designation_name', 'department_name')
 
 class AllowanceSerializer(serializers.ModelSerializer):
     class Meta:
