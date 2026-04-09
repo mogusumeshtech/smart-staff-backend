@@ -12,14 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class StaffCategoryViewSet(viewsets.ModelViewSet):
-    queryset = StaffCategory.objects.filter(is_active=True)
+    queryset = StaffCategory.objects.all()  # Show ALL categories for management
     serializer_class = StaffCategorySerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
 class DesignationViewSet(viewsets.ModelViewSet):
-    queryset = Designation.objects.filter(is_active=True)
+    queryset = Designation.objects.all()  # Show ALL designations
     serializer_class = DesignationSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -27,7 +27,7 @@ class DesignationViewSet(viewsets.ModelViewSet):
     search_fields = ['name']
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    queryset = Department.objects.filter(is_active=True)
+    queryset = Department.objects.all()  # Show ALL departments
     serializer_class = DepartmentSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]

@@ -5,6 +5,12 @@ class StaffCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffCategory
         fields = ('id', 'name', 'description', 'is_active')
+    
+    def create(self, validated_data):
+        """Ensure new categories are created as active"""
+        if 'is_active' not in validated_data:
+            validated_data['is_active'] = True
+        return super().create(validated_data)
 
 class DesignationSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -12,11 +18,23 @@ class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
         fields = ('id', 'name', 'category', 'category_name', 'salary_scale', 'description', 'is_active')
+    
+    def create(self, validated_data):
+        """Ensure new designations are created as active"""
+        if 'is_active' not in validated_data:
+            validated_data['is_active'] = True
+        return super().create(validated_data)
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ('id', 'name', 'head_name', 'description', 'is_active')
+    
+    def create(self, validated_data):
+        """Ensure new departments are created as active"""
+        if 'is_active' not in validated_data:
+            validated_data['is_active'] = True
+        return super().create(validated_data)
 
 class StaffBasicSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
