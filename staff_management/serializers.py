@@ -5,7 +5,7 @@ class StaffCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffCategory
         fields = ('id', 'name', 'description', 'is_active')
-    
+
     def create(self, validated_data):
         """Ensure new categories are created as active"""
         if 'is_active' not in validated_data:
@@ -18,7 +18,7 @@ class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
         fields = ('id', 'name', 'category', 'category_name', 'salary_scale', 'description', 'is_active')
-    
+
     def create(self, validated_data):
         """Ensure new designations are created as active"""
         if 'is_active' not in validated_data:
@@ -29,7 +29,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ('id', 'name', 'head_name', 'description', 'is_active')
-    
+
     def create(self, validated_data):
         """Ensure new departments are created as active"""
         if 'is_active' not in validated_data:
@@ -53,8 +53,25 @@ class StaffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = '__all__'  # Accept and save ALL fields from the model
+        # CRITICAL: Explicitly list ALL fields including computed ones
+        fields = ('id', 'staff_id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number',
+                  'date_of_birth', 'gender', 'category', 'category_name',
+                  'designation', 'designation_name', 'department', 'department_name',
+                  'date_of_joining', 'status', 'basic_salary',
+                  'bank_account_number', 'bank_name', 'bank_branch',
+                  'permanent_address', 'current_address',
+                  'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+                  'profile_picture', 'passport_photo', 'national_id', 'kra_pin',
+                  'passport_number', 'passport_expiry_date', 'marital_status',
+                  'nationality', 'qualification', 'mother_tongue', 'blood_group',
+                  'created_at', 'updated_at', 'is_active')
         read_only_fields = ('id', 'created_at', 'updated_at', 'category_name', 'designation_name', 'department_name')
+
+    def create(self, validated_data):
+        """Ensure new staff are created as active"""
+        if 'is_active' not in validated_data:
+            validated_data['is_active'] = True
+        return super().create(validated_data)
 
 class AllowanceSerializer(serializers.ModelSerializer):
     class Meta:
