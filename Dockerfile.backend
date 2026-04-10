@@ -16,11 +16,10 @@ COPY backend/ .
 
 EXPOSE 8000
 
-# Run migrations and create superuser before starting gunicorn
-RUN python manage.py migrate --noinput || true
-RUN python manage.py collectstatic --noinput || true
+# Copy entrypoint script and make it executable
+COPY backend/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# Create superuser if not exists
-RUN python -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@school.com', 'admin123')" || true
-
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+# DON'T run migrations/collectstatic here - they run in entrypoint.sh at container startup
+# Use entrypoint to initialize data and start gunicorn
+CMD ["/app/entrypoint.sh"]

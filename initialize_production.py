@@ -12,9 +12,30 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from django.core.management import call_command
+from django.contrib.auth import get_user_model
 from staff_management.models import Staff
 
-# Check if database is empty
+User = get_user_model()
+
+# Create superuser if doesn't exist
+admin_exists = User.objects.filter(username='admin').exists()
+if not admin_exists:
+    print("👤 Creating admin superuser...")
+    try:
+        User.objects.create_superuser('admin', 'admin@school.com', 'admin123')
+        print("✅ Admin superuser created successfully!")
+    except Exception as e:
+        print(f"⚠️  Error creating admin superuser: {e}")
+
+# Collect static files
+print("📦 Collecting static files...")
+try:
+    call_command('collectstatic', '--noinput', verbosity=0)
+    print("✅ Static files collected!")
+except Exception as e:
+    print(f"⚠️  Error collecting static files: {e}")
+
+# Check if database is empty and load sample data
 staff_count = Staff.objects.count()
 
 if staff_count == 0:
