@@ -1,0 +1,12 @@
+# Production Deployment Trigger
+
+This file triggers Render to rebuild and deploy with all serializer fixes.
+
+Deployment Date: 2026-04-10
+Latest Fixes:
+- StaffSerializer returns ALL fields (designation_name, department_name, category_name, basic_salary, status, is_active)
+- is_active defaults to true for new staff
+- Settings persist to PostgreSQL database
+- Automatic data initialization on production startup
+
+Ready for production deployment.
