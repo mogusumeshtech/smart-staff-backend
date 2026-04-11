@@ -25,6 +25,10 @@ class SchoolSettingsAdmin(admin.ModelAdmin):
         ('Security Settings', {
             'fields': ('two_factor_auth', 'session_timeout', 'auto_lock')
         }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
     )
     readonly_fields = ('created_at', 'updated_at')
 
