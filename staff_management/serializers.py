@@ -86,11 +86,13 @@ class DeductionSerializer(serializers.ModelSerializer):
 
 class StaffDeductionConfigSerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
+    staff_id = serializers.CharField(source='staff.staff_id', read_only=True)
 
     class Meta:
         model = StaffDeductionConfig
         fields = (
-            'id', 'staff', 'staff_name', 'apply_paye', 'apply_nssf',
+            'id', 'staff', 'staff_name', 'staff_id', 'apply_paye', 'apply_nssf',
             'apply_sha', 'sha_amount', 'apply_housing_levy',
-            'full_salary', 'notes'
+            'full_salary', 'notes', 'created_at', 'updated_at'
         )
+        read_only_fields = ('id', 'created_at', 'updated_at')

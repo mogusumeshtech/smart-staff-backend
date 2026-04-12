@@ -1,5 +1,5 @@
 from django.contrib import admin
-from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction
+from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig
 
 @admin.register(StaffCategory)
 class StaffCategoryAdmin(admin.ModelAdmin):
@@ -49,6 +49,23 @@ class AllowanceAdmin(admin.ModelAdmin):
 
 @admin.register(Deduction)
 class DeductionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'percentage', 'is_active')
+    list_display = ('name', 'percentage', 'amount', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('name',)
+    fieldsets = (
+        ('Deduction Information', {'fields': ('name', 'description')}),
+        ('Amount Configuration', {'fields': ('percentage', 'amount'), 'description': 'Set either percentage or fixed amount'}),
+        ('Status', {'fields': ('is_active',)}),
+    )
+
+
+@admin.register(StaffDeductionConfig)
+class StaffDeductionConfigAdmin(admin.ModelAdmin):
+    list_display = ('staff', 'apply_paye', 'apply_nssf', 'apply_sha', 'apply_housing_levy', 'full_salary')
+    list_filter = ('apply_paye', 'apply_nssf', 'apply_sha', 'apply_housing_levy', 'full_salary')
+    search_fields = ('staff__first_name', 'staff__last_name', 'staff__staff_id')
+    fieldsets = (
+        ('Staff Member', {'fields': ('staff',)}),
+        ('Statutory Deductions', {'fields': ('apply_paye', 'apply_nssf', 'apply_sha', 'sha_amount', 'apply_housing_levy')}),
+        ('Special Configure', {'fields': ('full_salary', 'notes')}),
+    )
