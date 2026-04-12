@@ -4,7 +4,7 @@ Kenyan Payroll Taxation and Deductions Calculator
 This module handles Kenya-specific payroll deductions including:
 - PAYE (Personal Income Tax) - Progressive taxation
 - NSSF (National Social Security Fund) - 6% employee contribution
-- NHIF (National Health Insurance Fund) - Fixed contribution
+- SHA (Social Health Authority) - Health insurance contribution (replaces NHIF)
 - Housing Levy - 1.5% employee contribution (introduced 2024)
 
 Source: Kenya Revenue Authority (KRA) tax tables 2026
@@ -19,7 +19,7 @@ class PayrollDeduction(models.Model):
     DEDUCTION_TYPES = [
         ('paye', 'PAYE (Personal Income Tax)'),
         ('nssf', 'NSSF Contribution'),
-        ('nhif', 'NHIF Contribution'),
+        ('sha', 'SHA Contribution'),
         ('housing_levy', 'Housing Levy'),
         ('other', 'Other Deduction'),
     ]
@@ -59,9 +59,9 @@ class KenyanPayrollCalculator:
     NSSF_RATE = Decimal('0.06')
     NSSF_CAP = Decimal('18000')
 
-    # NHIF - National Health Insurance Fund
+    # SHA - Social Health Authority (replaces NHIF)
     # Contribution varies by salary bracket
-    NHIF_BRACKETS = [
+    SHA_BRACKETS = [
         {'min': Decimal('0'), 'max': Decimal('5999'), 'amount': Decimal('150')},
         {'min': Decimal('6000'), 'max': Decimal('7999'), 'amount': Decimal('300')},
         {'min': Decimal('8000'), 'max': Decimal('11999'), 'amount': Decimal('400')},
@@ -129,19 +129,19 @@ class KenyanPayrollCalculator:
         return min(nssf, KenyanPayrollCalculator.NSSF_CAP).quantize(Decimal('0.01'))
 
     @staticmethod
-    def calculate_nhif(gross_salary):
+    def calculate_sha(gross_salary):
         """
-        Calculate NHIF contribution based on salary brackets.
+        Calculate SHA (Social Health Authority) contribution based on salary brackets.
 
         Args:
             gross_salary: Decimal - Monthly gross salary
 
         Returns:
-            Decimal - NHIF contribution amount
+            Decimal - SHA contribution amount
         """
         salary = Decimal(str(gross_salary))
 
-        for bracket in KenyanPayrollCalculator.NHIF_BRACKETS:
+        for bracket in KenyanPayrollCalculator.SHA_BRACKETS:
             if bracket['max'] is None:
                 if salary >= bracket['min']:
                     return bracket['amount']
@@ -150,7 +150,7 @@ class KenyanPayrollCalculator:
                     return bracket['amount']
 
         # Return maximum if salary exceeds all brackets
-        return KenyanPayrollCalculator.NHIF_BRACKETS[-1]['amount']
+        return KenyanPayrollCalculator.SHA_BRACKETS[-1]['amount']
 
     @staticmethod
     def calculate_housing_levy(gross_salary):
@@ -184,17 +184,17 @@ class KenyanPayrollCalculator:
 
         paye = KenyanPayrollCalculator.calculate_paye(gross)
         nssf = KenyanPayrollCalculator.calculate_nssf(gross)
-        nhif = KenyanPayrollCalculator.calculate_nhif(gross)
+        sha = KenyanPayrollCalculator.calculate_sha(gross)
         housing_levy = KenyanPayrollCalculator.calculate_housing_levy(gross)
 
-        total_deductions = paye + nssf + nhif + housing_levy
+        total_deductions = paye + nssf + sha + housing_levy
         net_salary = gross - total_deductions
 
         return {
             'gross_salary': gross,
             'paye': paye,
             'nssf': nssf,
-            'nhif': nhif,
+            'sha': sha,
             'housing_levy': housing_levy,
             'total_deductions': total_deductions,
             'net_salary': net_salary,
