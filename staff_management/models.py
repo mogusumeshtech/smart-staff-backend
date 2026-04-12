@@ -138,9 +138,11 @@ class Allowance(BaseModel):
 
 
 class Deduction(BaseModel):
+    """System-wide deduction types (fixed deductions applied to all staff)"""
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # For percentage-based deductions
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  # For fixed amount deductions
 
     class Meta:
         verbose_name = 'Deduction'
@@ -148,3 +150,27 @@ class Deduction(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class StaffDeductionConfig(BaseModel):
+    """Per-staff deduction configuration"""
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='deduction_configs')
+
+    # Statutory deductions
+    apply_paye = models.BooleanField(default=True)
+    apply_nssf = models.BooleanField(default=True)
+    apply_sha = models.BooleanField(default=True)  # Social Health Authority (replaces NHIF in Kenya)
+    sha_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    apply_housing_levy = models.BooleanField(default=True)
+
+    # Optional
+    full_salary = models.BooleanField(default=False)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Staff Deduction Config'
+        verbose_name_plural = 'Staff Deduction Configs'
+        unique_together = ('staff',)
+
+    def __str__(self):
+        return f'Deduction Config for {self.staff.get_full_name()}'

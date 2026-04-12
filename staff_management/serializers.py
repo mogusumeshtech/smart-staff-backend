@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction
+from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig
 
 class StaffCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,4 +81,16 @@ class AllowanceSerializer(serializers.ModelSerializer):
 class DeductionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deduction
-        fields = ('id', 'name', 'description', 'percentage', 'is_active')
+        fields = ('id', 'name', 'description', 'percentage', 'amount', 'is_active')
+
+
+class StaffDeductionConfigSerializer(serializers.ModelSerializer):
+    staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
+
+    class Meta:
+        model = StaffDeductionConfig
+        fields = (
+            'id', 'staff', 'staff_name', 'apply_paye', 'apply_nssf',
+            'apply_sha', 'sha_amount', 'apply_housing_levy',
+            'full_salary', 'notes'
+        )

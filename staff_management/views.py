@@ -1,10 +1,10 @@
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction
+from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig
 from staff_management.serializers import (
     StaffSerializer, StaffCategorySerializer, DesignationSerializer,
-    DepartmentSerializer, AllowanceSerializer, DeductionSerializer, StaffBasicSerializer
+    DepartmentSerializer, AllowanceSerializer, DeductionSerializer, StaffBasicSerializer, StaffDeductionConfigSerializer
 )
 import logging
 
@@ -131,3 +131,13 @@ class DeductionViewSet(viewsets.ModelViewSet):
     queryset = Deduction.objects.filter(is_active=True)
     serializer_class = DeductionSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class StaffDeductionConfigViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing per-staff deduction configurations"""
+    queryset = StaffDeductionConfig.objects.all()
+    serializer_class = StaffDeductionConfigSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['staff']
+    search_fields = ['staff__first_name', 'staff__last_name']
