@@ -6,18 +6,36 @@ class StaffCategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'created_at')
     list_filter = ('is_active', 'created_at')
     search_fields = ('name',)
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Basic Information', {'fields': ('name', 'description')}),
+        ('Status', {'fields': ('is_active',)}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
 
 @admin.register(Designation)
 class DesignationAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'salary_scale', 'is_active')
     list_filter = ('category', 'is_active')
     search_fields = ('name',)
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Basic Information', {'fields': ('name', 'category', 'salary_scale', 'description')}),
+        ('Status', {'fields': ('is_active',)}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'head_name', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('name', 'head_name')
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Basic Information', {'fields': ('name', 'head_name', 'description')}),
+        ('Status', {'fields': ('is_active',)}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
@@ -46,16 +64,24 @@ class AllowanceAdmin(admin.ModelAdmin):
     list_display = ('name', 'amount', 'is_taxable', 'is_active')
     list_filter = ('is_taxable', 'is_active')
     search_fields = ('name',)
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Basic Information', {'fields': ('name', 'description', 'amount', 'is_taxable')}),
+        ('Status', {'fields': ('is_active',)}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
 
 @admin.register(Deduction)
 class DeductionAdmin(admin.ModelAdmin):
     list_display = ('name', 'percentage', 'amount', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('name',)
+    readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         ('Deduction Information', {'fields': ('name', 'description')}),
         ('Amount Configuration', {'fields': ('percentage', 'amount'), 'description': 'Set either percentage or fixed amount'}),
         ('Status', {'fields': ('is_active',)}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
     )
 
 
@@ -64,8 +90,10 @@ class StaffDeductionConfigAdmin(admin.ModelAdmin):
     list_display = ('staff', 'apply_paye', 'apply_nssf', 'apply_sha', 'apply_housing_levy', 'full_salary')
     list_filter = ('apply_paye', 'apply_nssf', 'apply_sha', 'apply_housing_levy', 'full_salary')
     search_fields = ('staff__first_name', 'staff__last_name', 'staff__staff_id')
+    readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         ('Staff Member', {'fields': ('staff',)}),
         ('Statutory Deductions', {'fields': ('apply_paye', 'apply_nssf', 'apply_sha', 'sha_amount', 'apply_housing_levy')}),
         ('Special Configure', {'fields': ('full_salary', 'notes')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
     )
