@@ -11,3 +11,4 @@ if __name__ == '__main__':
             "Couldn't import Django. Are you sure it's installed?"
         ) from exc
     execute_from_command_line(sys.argv)
+# Deployment check - 2026-04-13 15:44:19
