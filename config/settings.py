@@ -145,7 +145,7 @@ SIMPLE_JWT = {
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:3001,http://localhost:5173,https://smart-staff-8b633.web.app',
+    default='http://localhost:3000,http://localhost:3001,http://localhost:5173,https://smart-staff-8b633.web.app,https://smart-staff-8b633.firebaseapp.com',
     cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Logging
