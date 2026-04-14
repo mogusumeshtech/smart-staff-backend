@@ -7,7 +7,7 @@ Write-Host ""
 
 # Step 1: Check git status
 Write-Host "📋 Checking Git status..." -ForegroundColor Yellow
-cd "c:\Users\Admin\Desktop\SMART STAFF\backend"
+Set-Location "c:\Users\Admin\Desktop\SMART STAFF\backend"
 git status
 Write-Host ""
 
