@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from payroll.models import PayrollPeriod, Payroll, PayrollEarning, PayrollDeduction
+from staff_management.serializers import StaffSerializer
 
 class PayrollPeriodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,20 +23,60 @@ class PayrollSerializer(serializers.ModelSerializer):
     period_display = serializers.CharField(source='period.__str__', read_only=True)
     earnings = PayrollEarningSerializer(many=True, read_only=True)
     deductions = PayrollDeductionSerializer(many=True, read_only=True)
+    staff_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Payroll
         fields = (
-            'id', 'period', 'period_display', 'staff', 'staff_name', 'basic_salary',
-            'gross_earnings', 'total_deductions', 'net_salary', 'days_worked', 'working_days',
-            'status', 'approved_by', 'approval_date', 'disbursed_on', 'remarks',
-            'earnings', 'deductions', 'is_active', 'created_at'
+            'id', 'period', 'period_display', 'staff', 'staff_name', 'staff_details',
+            'basic_salary', 'gross_earnings', 'total_deductions', 'net_salary',
+            'days_worked', 'working_days', 'status', 'approved_by', 'approval_date',
+            'disbursed_on', 'remarks', 'earnings', 'deductions', 'created_at'
         )
         read_only_fields = ('id', 'gross_earnings', 'total_deductions', 'net_salary', 'created_at')
 
+    def get_staff_details(self, obj):
+        """Return full staff details for receipt display."""
+        return {
+            'first_name': obj.staff.first_name,
+            'last_name': obj.staff.last_name,
+            'staff_id': obj.staff.staff_id,
+            'designation_name': obj.staff.designation.name if obj.staff.designation else 'N/A',
+            'department_name': obj.staff.department.name if obj.staff.department else 'N/A'
+        }
+
+    def create(self, validated_data):
+        """Create payroll and ensure salary calculations are done."""
+        payroll = Payroll(**validated_data)
+        payroll.calculate_earnings_deductions()  # Manually trigger calculation
+        payroll.save()
+        return payroll
+
+    def update(self, instance, validated_data):
+        """Update payroll and recalculate salary values."""
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.calculate_earnings_deductions()  # Recalculate on update
+        instance.save()
+        return instance
+
 class PayrollSummarySerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
+    period_display = serializers.CharField(source='period.__str__', read_only=True)
+    staff_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Payroll
-        fields = ('id', 'staff', 'staff_name', 'net_salary', 'status', 'disbursed_on')
+        fields = ('id', 'staff', 'staff_name', 'staff_details', 'period_display',
+                  'basic_salary', 'gross_earnings', 'total_deductions', 'net_salary',
+                  'status', 'disbursed_on')
+
+    def get_staff_details(self, obj):
+        """Return full staff details for receipt display."""
+        return {
+            'first_name': obj.staff.first_name,
+            'last_name': obj.staff.last_name,
+            'staff_id': obj.staff.staff_id,
+            'designation_name': obj.staff.designation.name if obj.staff.designation else 'N/A',
+            'department_name': obj.staff.department.name if obj.staff.department else 'N/A'
+        }

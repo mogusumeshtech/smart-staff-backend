@@ -96,3 +96,37 @@ class StaffDeductionConfigSerializer(serializers.ModelSerializer):
             'full_salary', 'notes', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate_staff(self, value):
+        """Validate that staff exists and is valid."""
+        if not value:
+            raise serializers.ValidationError("Staff member is required")
+        return value
+
+    def validate(self, data):
+        """Validate entire object."""
+        # Ensure staff is present
+        staff = data.get('staff')
+        if not staff:
+            raise serializers.ValidationError("Staff member is required")
+
+        # Ensure sha_amount is valid if apply_sha is True
+        if data.get('apply_sha') and not data.get('sha_amount'):
+            data['sha_amount'] = 0
+
+        return data
+
+    def create(self, validated_data):
+        """Create deduction config, handling unique constraint."""
+        staff = validated_data.get('staff')
+
+        # Check if config already exists for this staff
+        existing = StaffDeductionConfig.objects.filter(staff=staff).first()
+        if existing:
+            # Update existing instead of creating duplicate
+            for attr, value in validated_data.items():
+                setattr(existing, attr, value)
+            existing.save()
+            return existing
+
+        return super().create(validated_data)

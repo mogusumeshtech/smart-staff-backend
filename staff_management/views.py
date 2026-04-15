@@ -141,3 +141,27 @@ class StaffDeductionConfigViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['staff']
     search_fields = ['staff__first_name', 'staff__last_name']
+
+    def create(self, request, *args, **kwargs):
+        """Create or update deduction config for a staff member."""
+        try:
+            staff_id = request.data.get('staff')
+
+            # Check if config already exists for this staff
+            existing = StaffDeductionConfig.objects.filter(staff_id=staff_id).first()
+
+            if existing:
+                # Update existing config
+                serializer = self.get_serializer(existing, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # Create new config
+            return super().create(request, *args, **kwargs)
+
+        except Exception as e:
+            return Response(
+                {'error': str(e), 'detail': getattr(e, 'detail', str(e))},
+                status=status.HTTP_400_BAD_REQUEST
+            )
