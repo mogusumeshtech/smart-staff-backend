@@ -69,34 +69,30 @@ class Payroll(BaseModel):
     def calculate_earnings_deductions(self):
         """Calculate gross_earnings and total_deductions from related records."""
         # Calculate gross earnings from PayrollEarning records if they exist
-        earnings_sum = sum(
-            Decimal(e.amount) for e in self.earnings.all()
-        ) if self.earnings.exists() else Decimal('0')
+        earnings_sum = Decimal('0')
+        if self.pk:  # Only if already saved
+            earnings_sum = sum(
+                Decimal(e.amount) for e in self.earnings.all()
+            ) if self.earnings.exists() else Decimal('0')
 
         # Use basic_salary as gross earnings base
         self.gross_earnings = self.basic_salary + earnings_sum
 
         # Calculate total deductions from PayrollDeduction records if they exist
-        deductions_sum = sum(
-            Decimal(d.amount) for d in self.deductions.all()
-        ) if self.deductions.exists() else Decimal('0')
+        deductions_sum = Decimal('0')
+        if self.pk:  # Only if already saved
+            deductions_sum = sum(
+                Decimal(d.amount) for d in self.deductions.all()
+            ) if self.deductions.exists() else Decimal('0')
 
-        # If no explicit deductions, create default deductions (15% of basic for taxes)
-        if deductions_sum == 0 and not self.deductions.exists():
+        # If no explicit deductions were found, calculate default deductions
+        if deductions_sum == 0:
             paye = self.basic_salary * Decimal('0.10')  # 10% PAYE
             nssf = self.basic_salary * Decimal('0.06')  # 6% NSSF
             health = self.basic_salary * Decimal('0.02')  # 2% Health
             housing = self.basic_salary * Decimal('0.015')  # 1.5% Housing levy
 
             deductions_sum = paye + nssf + health + housing
-
-            # Create deduction records if this is a saved instance
-            if self.pk:
-                self.deductions.all().delete()  # Clear existing
-                self.deductions.create(description='PAYE', amount=paye)
-                self.deductions.create(description='NSSF', amount=nssf)
-                self.deductions.create(description='SHA (Health)', amount=health)
-                self.deductions.create(description='Housing Levy', amount=housing)
 
         self.total_deductions = deductions_sum
 
@@ -105,24 +101,33 @@ class Payroll(BaseModel):
 
     def save(self, *args, **kwargs):
         """Automatically calculate salary components before saving."""
+        is_new = not self.pk
+        
+        # Calculate initial values
         self.calculate_earnings_deductions()
+        
+        # Save first to get an ID
         super().save(*args, **kwargs)
 
-        # After saving, ensure deductions are created
-        if not self.deductions.exists():
+        # After saving, ensure deductions are created for new payrolls
+        if is_new and not self.deductions.exists():
             paye = self.basic_salary * Decimal('0.10')
             nssf = self.basic_salary * Decimal('0.06')
             health = self.basic_salary * Decimal('0.02')
             housing = self.basic_salary * Decimal('0.015')
 
-            self.deductions.create(description='PAYE', amount=paye)
-            self.deductions.create(description='NSSF', amount=nssf)
-            self.deductions.create(description='SHA (Health)', amount=health)
-            self.deductions.create(description='Housing Levy', amount=housing)
+            try:
+                self.deductions.create(description='PAYE', amount=paye)
+                self.deductions.create(description='NSSF', amount=nssf)
+                self.deductions.create(description='SHA (Health)', amount=health)
+                self.deductions.create(description='Housing Levy', amount=housing)
 
-            # Recalculate after creating deductions
-            self.calculate_earnings_deductions()
-            super().save(*args, **kwargs)
+                # Recalculate with deductions now in place
+                self.calculate_earnings_deductions()
+                super().save(*args, **kwargs)
+            except Exception as e:
+                print(f"Error creating deductions: {e}")
+                # Continue even if deductions fail - the payroll record exists
 
 
 class PayrollEarning(BaseModel):
