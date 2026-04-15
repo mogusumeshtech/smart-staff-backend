@@ -64,12 +64,13 @@ class PayrollSummarySerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
     period_display = serializers.CharField(source='period.__str__', read_only=True)
     staff_details = serializers.SerializerMethodField()
+    deductions = PayrollDeductionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Payroll
         fields = ('id', 'staff', 'staff_name', 'staff_details', 'period_display',
                   'basic_salary', 'gross_earnings', 'total_deductions', 'net_salary',
-                  'status', 'disbursed_on')
+                  'status', 'disbursed_on', 'deductions')
 
     def get_staff_details(self, obj):
         """Return full staff details for receipt display."""
