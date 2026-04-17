@@ -102,10 +102,10 @@ class Payroll(BaseModel):
     def save(self, *args, **kwargs):
         """Automatically calculate salary components before saving."""
         is_new = not self.pk
-        
+
         # Calculate initial values
         self.calculate_earnings_deductions()
-        
+
         # Save first to get an ID
         super().save(*args, **kwargs)
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig
+from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig, CategoryDeductionConfig, DesignationDeductionConfig
 
 class StaffCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -130,3 +130,43 @@ class StaffDeductionConfigSerializer(serializers.ModelSerializer):
             return existing
 
         return super().create(validated_data)
+
+
+class CategoryDeductionConfigSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
+    class Meta:
+        model = CategoryDeductionConfig
+        fields = (
+            'id', 'category', 'category_name', 'apply_paye', 'apply_nssf',
+            'apply_sha', 'sha_amount', 'apply_housing_levy',
+            'notes', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate(self, data):
+        """Validate entire object."""
+        # Ensure sha_amount is valid if apply_sha is True
+        if data.get('apply_sha') and not data.get('sha_amount'):
+            data['sha_amount'] = 0
+        return data
+
+
+class DesignationDeductionConfigSerializer(serializers.ModelSerializer):
+    designation_name = serializers.CharField(source='designation.name', read_only=True)
+
+    class Meta:
+        model = DesignationDeductionConfig
+        fields = (
+            'id', 'designation', 'designation_name', 'apply_paye', 'apply_nssf',
+            'apply_sha', 'sha_amount', 'apply_housing_levy',
+            'notes', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate(self, data):
+        """Validate entire object."""
+        # Ensure sha_amount is valid if apply_sha is True
+        if data.get('apply_sha') and not data.get('sha_amount'):
+            data['sha_amount'] = 0
+        return data

@@ -1,10 +1,11 @@
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig
+from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig, CategoryDeductionConfig, DesignationDeductionConfig
 from staff_management.serializers import (
     StaffSerializer, StaffCategorySerializer, DesignationSerializer,
-    DepartmentSerializer, AllowanceSerializer, DeductionSerializer, StaffBasicSerializer, StaffDeductionConfigSerializer
+    DepartmentSerializer, AllowanceSerializer, DeductionSerializer, StaffBasicSerializer, StaffDeductionConfigSerializer,
+    CategoryDeductionConfigSerializer, DesignationDeductionConfigSerializer
 )
 import logging
 
@@ -165,3 +166,21 @@ class StaffDeductionConfigViewSet(viewsets.ModelViewSet):
                 {'error': str(e), 'detail': getattr(e, 'detail', str(e))},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class CategoryDeductionConfigViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing category-level deduction configurations"""
+    queryset = CategoryDeductionConfig.objects.all()
+    serializer_class = CategoryDeductionConfigSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['category']
+
+
+class DesignationDeductionConfigViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing designation-level deduction configurations"""
+    queryset = DesignationDeductionConfig.objects.all()
+    serializer_class = DesignationDeductionConfigSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['designation']

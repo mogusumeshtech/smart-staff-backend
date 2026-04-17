@@ -174,3 +174,45 @@ class StaffDeductionConfig(BaseModel):
 
     def __str__(self):
         return f'Deduction Config for {self.staff.get_full_name()}'
+
+
+class CategoryDeductionConfig(BaseModel):
+    """Deduction configuration for all staff in a category"""
+    category = models.OneToOneField(StaffCategory, on_delete=models.CASCADE, related_name='deduction_config')
+
+    # Statutory deductions
+    apply_paye = models.BooleanField(default=True)
+    apply_nssf = models.BooleanField(default=True)
+    apply_sha = models.BooleanField(default=True)
+    sha_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    apply_housing_levy = models.BooleanField(default=True)
+
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Category Deduction Config'
+        verbose_name_plural = 'Category Deduction Configs'
+
+    def __str__(self):
+        return f'Deduction Config for {self.category.name}'
+
+
+class DesignationDeductionConfig(BaseModel):
+    """Deduction configuration for all staff with a designation"""
+    designation = models.OneToOneField(Designation, on_delete=models.CASCADE, related_name='deduction_config')
+
+    # Statutory deductions
+    apply_paye = models.BooleanField(default=True)
+    apply_nssf = models.BooleanField(default=True)
+    apply_sha = models.BooleanField(default=True)
+    sha_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    apply_housing_levy = models.BooleanField(default=True)
+
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Designation Deduction Config'
+        verbose_name_plural = 'Designation Deduction Configs'
+
+    def __str__(self):
+        return f'Deduction Config for {self.designation.name}'
