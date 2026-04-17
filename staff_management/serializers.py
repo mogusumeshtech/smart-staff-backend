@@ -87,13 +87,18 @@ class DeductionSerializer(serializers.ModelSerializer):
 class StaffDeductionConfigSerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
     staff_id = serializers.CharField(source='staff.staff_id', read_only=True)
+    custom_deductions = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Deduction.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = StaffDeductionConfig
         fields = (
             'id', 'staff', 'staff_name', 'staff_id', 'apply_paye', 'apply_nssf',
             'apply_sha', 'sha_amount', 'apply_housing_levy',
-            'full_salary', 'notes', 'created_at', 'updated_at'
+            'full_salary', 'notes', 'custom_deductions', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
 
@@ -134,13 +139,18 @@ class StaffDeductionConfigSerializer(serializers.ModelSerializer):
 
 class CategoryDeductionConfigSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
+    custom_deductions = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Deduction.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = CategoryDeductionConfig
         fields = (
             'id', 'category', 'category_name', 'apply_paye', 'apply_nssf',
             'apply_sha', 'sha_amount', 'apply_housing_levy',
-            'notes', 'created_at', 'updated_at'
+            'notes', 'custom_deductions', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
 
@@ -154,13 +164,18 @@ class CategoryDeductionConfigSerializer(serializers.ModelSerializer):
 
 class DesignationDeductionConfigSerializer(serializers.ModelSerializer):
     designation_name = serializers.CharField(source='designation.name', read_only=True)
+    custom_deductions = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Deduction.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = DesignationDeductionConfig
         fields = (
             'id', 'designation', 'designation_name', 'apply_paye', 'apply_nssf',
             'apply_sha', 'sha_amount', 'apply_housing_levy',
-            'notes', 'created_at', 'updated_at'
+            'notes', 'custom_deductions', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
 

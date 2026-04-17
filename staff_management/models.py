@@ -167,6 +167,9 @@ class StaffDeductionConfig(BaseModel):
     full_salary = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
 
+    # Link to custom deductions
+    custom_deductions = models.ManyToManyField(Deduction, blank=True, related_name='staff_configs')
+
     class Meta:
         verbose_name = 'Staff Deduction Config'
         verbose_name_plural = 'Staff Deduction Configs'
@@ -189,6 +192,9 @@ class CategoryDeductionConfig(BaseModel):
 
     notes = models.TextField(blank=True, null=True)
 
+    # Link to custom deductions
+    custom_deductions = models.ManyToManyField(Deduction, blank=True, related_name='category_configs')
+
     class Meta:
         verbose_name = 'Category Deduction Config'
         verbose_name_plural = 'Category Deduction Configs'
@@ -209,6 +215,9 @@ class DesignationDeductionConfig(BaseModel):
     apply_housing_levy = models.BooleanField(default=True)
 
     notes = models.TextField(blank=True, null=True)
+
+    # Link to custom deductions
+    custom_deductions = models.ManyToManyField(Deduction, blank=True, related_name='designation_configs')
 
     class Meta:
         verbose_name = 'Designation Deduction Config'
