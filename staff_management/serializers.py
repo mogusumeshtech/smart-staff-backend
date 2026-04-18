@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig
+from staff_management.models import Staff, StaffCategory, Designation, Department, Allowance, Deduction, StaffDeductionConfig, CategoryDeductionConfig, DesignationDeductionConfig
 
 class StaffCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,12 +87,101 @@ class DeductionSerializer(serializers.ModelSerializer):
 class StaffDeductionConfigSerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
     staff_id = serializers.CharField(source='staff.staff_id', read_only=True)
+    custom_deductions = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Deduction.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = StaffDeductionConfig
         fields = (
             'id', 'staff', 'staff_name', 'staff_id', 'apply_paye', 'apply_nssf',
             'apply_sha', 'sha_amount', 'apply_housing_levy',
-            'full_salary', 'notes', 'created_at', 'updated_at'
+            'full_salary', 'notes', 'custom_deductions', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate_staff(self, value):
+        """Validate that staff exists and is valid."""
+        if not value:
+            raise serializers.ValidationError("Staff member is required")
+        return value
+
+    def validate(self, data):
+        """Validate entire object."""
+        # Ensure staff is present
+        staff = data.get('staff')
+        if not staff:
+            raise serializers.ValidationError("Staff member is required")
+
+        # Ensure sha_amount is valid if apply_sha is True
+        if data.get('apply_sha') and not data.get('sha_amount'):
+            data['sha_amount'] = 0
+
+        return data
+
+    def create(self, validated_data):
+        """Create deduction config, handling unique constraint."""
+        staff = validated_data.get('staff')
+
+        # Check if config already exists for this staff
+        existing = StaffDeductionConfig.objects.filter(staff=staff).first()
+        if existing:
+            # Update existing instead of creating duplicate
+            for attr, value in validated_data.items():
+                setattr(existing, attr, value)
+            existing.save()
+            return existing
+
+        return super().create(validated_data)
+
+
+class CategoryDeductionConfigSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    custom_deductions = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Deduction.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = CategoryDeductionConfig
+        fields = (
+            'id', 'category', 'category_name', 'apply_paye', 'apply_nssf',
+            'apply_sha', 'sha_amount', 'apply_housing_levy',
+            'notes', 'custom_deductions', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate(self, data):
+        """Validate entire object."""
+        # Ensure sha_amount is valid if apply_sha is True
+        if data.get('apply_sha') and not data.get('sha_amount'):
+            data['sha_amount'] = 0
+        return data
+
+
+class DesignationDeductionConfigSerializer(serializers.ModelSerializer):
+    designation_name = serializers.CharField(source='designation.name', read_only=True)
+    custom_deductions = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Deduction.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = DesignationDeductionConfig
+        fields = (
+            'id', 'designation', 'designation_name', 'apply_paye', 'apply_nssf',
+            'apply_sha', 'sha_amount', 'apply_housing_levy',
+            'notes', 'custom_deductions', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate(self, data):
+        """Validate entire object."""
+        # Ensure sha_amount is valid if apply_sha is True
+        if data.get('apply_sha') and not data.get('sha_amount'):
+            data['sha_amount'] = 0
+        return data
