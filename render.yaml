@@ -16,3 +16,7 @@ services:
         value: 'https://smart-staff-8b633.web.app,http://localhost:5173,http://localhost:3000'
       - key: DATABASE_URL
         sync: false
+    disks:
+      - name: media
+        mountPath: /opt/render/project/src/backend/media
+        sizeGB: 1
