@@ -68,7 +68,7 @@ class PayrollSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payroll
-        fields = ('id', 'staff', 'staff_name', 'staff_details', 'period_display',
+        fields = ('id', 'period', 'staff', 'staff_name', 'staff_details', 'period_display',
                   'basic_salary', 'gross_earnings', 'total_deductions', 'net_salary',
                   'status', 'disbursed_on', 'deductions')
 
